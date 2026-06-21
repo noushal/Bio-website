@@ -14,6 +14,7 @@ import { FaSteam, FaGlobe } from "react-icons/fa";
 import { useLanyardWS } from "use-lanyard"
 
 const DISCORD_ID = "844446272273383425"
+const TYPING_TITLE = "@noushal"
 
 export default function BioPage() {
   const [hasEntered, setHasEntered] = useState(false)
@@ -31,8 +32,47 @@ export default function BioPage() {
   }, [])
 
   useEffect(() => {
+    let position = 0
+    let isDeleting = false
+    let timeout: ReturnType<typeof setTimeout>
+
+    const type = () => {
+      if (!isDeleting) {
+        position += 1
+        document.title = TYPING_TITLE.slice(0, position)
+
+        if (position === TYPING_TITLE.length) {
+          isDeleting = true
+          timeout = setTimeout(type, 1200)
+          return
+        }
+      } else {
+        position -= 1
+        document.title = TYPING_TITLE.slice(0, position) || "\u200B"
+
+        if (position === 0) {
+          isDeleting = false
+          timeout = setTimeout(type, 500)
+          return
+        }
+      }
+
+      timeout = setTimeout(type, isDeleting ? 90 : 150)
+    }
+
+    timeout = setTimeout(type, 400)
+    return () => {
+      clearTimeout(timeout)
+      document.title = TYPING_TITLE
+    }
+  }, [])
+
+  useEffect(() => {
     fetch("/api/views")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load view count")
+        return r.json()
+      })
       .then((d) => setViewCount(d.count))
       .catch(() => setViewCount(0))
   }, [])
@@ -50,7 +90,10 @@ export default function BioPage() {
         }
       }, 100)
       fetch("/api/views", { method: "POST" })
-        .then((r) => r.json())
+        .then((r) => {
+          if (!r.ok) throw new Error("Failed to increment view count")
+          return r.json()
+        })
         .then((d) => setViewCount(d.count))
         .catch(() => {})
     }
@@ -170,7 +213,7 @@ export default function BioPage() {
         className="absolute inset-0 z-0 w-full h-full object-cover opacity-50"
       >
         <source
-          src="https://r2.guns.lol/230d826e-e86a-4424-b169-084ad452ef8d.mp4"
+          src="https://r2.guns.lol/6340aa17-7cd1-41c3-a1be-13ec72fe4ccd.mp4"
           type="video/mp4"
         />
       </video>
